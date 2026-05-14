@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Интерактивный дашборд</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: rgba(255,255,255,.88);
+      --panel-strong: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #dbe3f0;
+      --accent: #2563eb;
+      --accent-2: #7c3aed;
+      --success: #059669;
+      --warning: #d97706;
+      --shadow: 0 20px 60px rgba(15, 23, 42, .12);
+      --radius: 26px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(37, 99, 235, .16), transparent 28rem),
+        radial-gradient(circle at 90% 10%, rgba(124, 58, 237, .13), transparent 26rem),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+
+    body { padding: 28px; }
+
+    .shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: grid;
+      gap: 22px;
+    }
+
+    .hero, .panel, .kpi {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.8);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero {
+      border-radius: 34px;
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1.4fr .8fr;
+      gap: 24px;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      right: -120px;
+      top: -180px;
+      background: radial-gradient(circle, rgba(37,99,235,.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: var(--accent);
+      background: rgba(37,99,235,.1);
+      font-weight: 800;
+      letter-spacing: .02em;
+      font-size: 13px;
+    }
+
+    h1 {
+      margin: 16px 0 12px;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: .98;
+      letter-spacing: -.05em;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .hero-card {
+      border-radius: 28px;
+      background: linear-gradient(145deg, #0f172a, #1d4ed8);
+      color: #fff;
+      padding: 24px;
+      min-height: 250px;
+      display: grid;
+      gap: 18px;
+      align-content: space-between;
+      box-shadow: 0 24px 70px rgba(37, 99, 235, .28);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-card strong {
+      display: block;
+      font-size: 44px;
+      line-height: 1;
+      margin-top: 10px;
+    }
+
+    .hero-card small {
+      color: rgba(255,255,255,.78);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 22px;
+    }
+
+    .filters {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .panel {
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+
+    .control label {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    select, button {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel-strong);
+      color: var(--text);
+      min-height: 54px;
+      padding: 0 16px;
+      font-size: 16px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    select:focus, button:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+
+    button {
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: none;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 35px rgba(37,99,235,.22);
+    }
+
+    .kpis {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .kpi {
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: clamp(28px, 4vw, 44px);
+      letter-spacing: -.04em;
+      line-height: 1.05;
+    }
+
+    .kpi em {
+      display: block;
+      color: var(--success);
+      font-style: normal;
+      font-weight: 800;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .dashboard {
+      grid-template-columns: 1.35fr .95fr;
+    }
+
+    .panel h2 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      letter-spacing: -.03em;
+    }
+
+    .panel-subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .chart-box {
+      height: 390px;
+      width: 100%;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(37,99,235,.05), rgba(255,255,255,.5));
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .bar-item {
+      display: grid;
+      gap: 8px;
+    }
+
+    .bar-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .bar-track {
+      height: 14px;
+      background: #e8eef8;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: inherit;
+      transition: width .35s ease;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: #fff;
+      max-height: 390px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
+    }
+
+    th, td {
+      padding: 15px 16px;
+      text-align: left;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 15px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f8fbff;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: .05em;
+      z-index: 1;
+    }
+
+    td:last-child, th:last-child {
+      text-align: right;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(5,150,105,.12);
+      color: var(--success);
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 8px 0 20px;
+      line-height: 1.5;
+    }
+
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 20;
+      display: none;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #0f172a;
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 18px 50px rgba(15,23,42,.28);
+    }
+
+    @media (max-width: 1020px) {
+      .hero, .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .filters, .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 16px; }
+      .hero, .panel, .kpi { padding: 18px; }
+      .filters, .kpis { grid-template-columns: 1fr; }
+      .chart-box { height: 320px; }
+      h1 { font-size: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Рабочий GitHub Pages дашборд</div>
+        <h1>Интерактивная аналитика продаж</h1>
+        <p>
+          Это автономный демонстрационный дашборд с встроенными данными. Он не зависит от CSV, Parquet,
+          внешних библиотек или серверов - достаточно загрузить один файл <b>index.html</b> в репозиторий.
+        </p>
+      </div>
+      <aside class="hero-card">
+        <div>
+          <small>Выбранный сегмент</small>
+          <strong id="heroValue">0</strong>
+        </div>
+        <small id="heroCaption">Здесь появится краткая сводка после загрузки.</small>
+      </aside>
+    </section>
+
+    <section class="grid filters panel">
+      <div class="control">
+        <label for="yearFilter">Год</label>
+        <select id="yearFilter"></select>
+      </div>
+      <div class="control">
+        <label for="regionFilter">Регион</label>
+        <select id="regionFilter"></select>
+      </div>
+      <div class="control">
+        <label for="categoryFilter">Категория</label>
+        <select id="categoryFilter"></select>
+      </div>
+      <div class="control">
+        <label>&nbsp;</label>
+        <button id="resetButton" type="button">Сбросить фильтры</button>
+      </div>
+    </section>
+
+    <section class="grid kpis">
+      <article class="kpi">
+        <span>Выручка</span>
+        <strong id="revenueKpi">0 ₽</strong>
+        <em id="revenueTrend">+0% к среднему</em>
+      </article>
+      <article class="kpi">
+        <span>Заказы</span>
+        <strong id="ordersKpi">0</strong>
+        <em id="ordersTrend">+0% к среднему</em>
+      </article>
+      <article class="kpi">
+        <span>Средний чек</span>
+        <strong id="ticketKpi">0 ₽</strong>
+        <em id="ticketTrend">Расчёт выполнен</em>
+      </article>
+      <article class="kpi">
+        <span>Лидер периода</span>
+        <strong id="leaderKpi">-</strong>
+        <em id="leaderTrend">По выручке</em>
+      </article>
+    </section>
+
+    <section class="grid dashboard">
+      <article class="panel">
+        <h2>Динамика выручки</h2>
+        <p class="panel-subtitle">Линия обновляется при каждом изменении фильтров.</p>
+        <div class="chart-box">
+          <svg id="lineChart" viewBox="0 0 760 360" role="img" aria-label="График динамики"></svg>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Топ категорий</h2>
+        <p class="panel-subtitle">Сравнение выбранного сегмента по выручке.</p>
+        <div id="bars" class="bar-list"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Таблица сегментов</h2>
+      <p class="panel-subtitle">Последние значения после применения фильтров.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Год</th>
+              <th>Регион</th>
+              <th>Категория</th>
+              <th>Заказы</th>
+              <th>Средний чек</th>
+              <th>Выручка</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="footer">
+      Файл готов для GitHub Pages. Никаких дополнительных загрузок или настроек не требуется.
+    </p>
+  </main>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    const dataset = [
+      { year: 2021, region: "Центр", category: "Онлайн", orders: 1420, avgTicket: 2140 },
+      { year: 2021, region: "Центр", category: "Розница", orders: 1175, avgTicket: 1880 },
+      { year: 2021, region: "Центр", category: "Премиум", orders: 460, avgTicket: 5340 },
+      { year: 2021, region: "Север", category: "Онлайн", orders: 980, avgTicket: 2050 },
+      { year: 2021, region: "Север", category: "Розница", orders: 860, avgTicket: 1740 },
+      { year: 2021, region: "Север", category: "Премиум", orders: 305, avgTicket: 4980 },
+      { year: 2021, region: "Юг", category: "Онлайн", orders: 1210, avgTicket: 1980 },
+      { year: 2021, region: "Юг", category: "Розница", orders: 1055, avgTicket: 1660 },
+      { year: 2021, region: "Юг", category: "Премиум", orders: 370, avgTicket: 4820 },
+
+      { year: 2022, region: "Центр", category: "Онлайн", orders: 1560, avgTicket: 2290 },
+      { year: 2022, region: "Центр", category: "Розница", orders: 1230, avgTicket: 1940 },
+      { year: 2022, region: "Центр", category: "Премиум", orders: 520, avgTicket: 5560 },
+      { year: 2022, region: "Север", category: "Онлайн", orders: 1110, avgTicket: 2170 },
+      { year: 2022, region: "Север", category: "Розница", orders: 910, avgTicket: 1810 },
+      { year: 2022, region: "Север", category: "Премиум", orders: 340, avgTicket: 5170 },
+      { year: 2022, region: "Юг", category: "Онлайн", orders: 1320, avgTicket: 2110 },
+      { year: 2022, region: "Юг", category: "Розница", orders: 1125, avgTicket: 1730 },
+      { year: 2022, region: "Юг", category: "Премиум", orders: 410, avgTicket: 5060 },
+
+      { year: 2023, region: "Центр", category: "Онлайн", orders: 1710, avgTicket: 2410 },
+      { year: 2023, region: "Центр", category: "Розница", orders: 1305, avgTicket: 2020 },
+      { year: 2023, region: "Центр", category: "Премиум", orders: 585, avgTicket: 5810 },
+      { year: 2023, region: "Север", category: "Онлайн", orders: 1225, avgTicket: 2260 },
+      { year: 2023, region: "Север", category: "Розница", orders: 970, avgTicket: 1880 },
+      { year: 2023, region: "Север", category: "Премиум", orders: 390, avgTicket: 5380 },
+      { year: 2023, region: "Юг", category: "Онлайн", orders: 1460, avgTicket: 2200 },
+      { year: 2023, region: "Юг", category: "Розница", orders: 1190, avgTicket: 1810 },
+      { year: 2023, region: "Юг", category: "Премиум", orders: 455, avgTicket: 5290 },
+
+      { year: 2024, region: "Центр", category: "Онлайн", orders: 1890, avgTicket: 2540 },
+      { year: 2024, region: "Центр", category: "Розница", orders: 1390, avgTicket: 2110 },
+      { year: 2024, region: "Центр", category: "Премиум", orders: 650, avgTicket: 6120 },
+      { year: 2024, region: "Север", category: "Онлайн", orders: 1360, avgTicket: 2390 },
+      { year: 2024, region: "Север", category: "Розница", orders: 1040, avgTicket: 1960 },
+      { year: 2024, region: "Север", category: "Премиум", orders: 430, avgTicket: 5660 },
+      { year: 2024, region: "Юг", category: "Онлайн", orders: 1615, avgTicket: 2330 },
+      { year: 2024, region: "Юг", category: "Розница", orders: 1275, avgTicket: 1890 },
+      { year: 2024, region: "Юг", category: "Премиум", orders: 505, avgTicket: 5520 },
+
+      { year: 2025, region: "Центр", category: "Онлайн", orders: 2075, avgTicket: 2680 },
+      { year: 2025, region: "Центр", category: "Розница", orders: 1465, avgTicket: 2220 },
+      { year: 2025, region: "Центр", category: "Премиум", orders: 720, avgTicket: 6480 },
+      { year: 2025, region: "Север", category: "Онлайн", orders: 1490, avgTicket: 2510 },
+      { year: 2025, region: "Север", category: "Розница", orders: 1095, avgTicket: 2050 },
+      { year: 2025, region: "Север", category: "Премиум", orders: 475, avgTicket: 5920 },
+      { year: 2025, region: "Юг", category: "Онлайн", orders: 1770, avgTicket: 2460 },
+      { year: 2025, region: "Юг", category: "Розница", orders: 1340, avgTicket: 1980 },
+      { year: 2025, region: "Юг", category: "Премиум", orders: 560, avgTicket: 5790 }
+    ].map(item => ({ ...item, revenue: item.orders * item.avgTicket }));
+
+    const els = {
+      year: document.getElementById("yearFilter"),
+      region: document.getElementById("regionFilter"),
+      category: document.getElementById("categoryFilter"),
+      reset: document.getElementById("resetButton"),
+      heroValue: document.getElementById("heroValue"),
+      heroCaption: document.getElementById("heroCaption"),
+      revenue: document.getElementById("revenueKpi"),
+      orders: document.getElementById("ordersKpi"),
+      ticket: document.getElementById("ticketKpi"),
+      leader: document.getElementById("leaderKpi"),
+      revenueTrend: document.getElementById("revenueTrend"),
+      ordersTrend: document.getElementById("ordersTrend"),
+      ticketTrend: document.getElementById("ticketTrend"),
+      leaderTrend: document.getElementById("leaderTrend"),
+      bars: document.getElementById("bars"),
+      table: document.getElementById("tableBody"),
+      chart: document.getElementById("lineChart"),
+      tooltip: document.getElementById("tooltip")
+    };
+
+    function unique(key) {
+      return [...new Set(dataset.map(row => row[key]))];
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("ru-RU").format(Math.round(value));
+    }
+
+    function formatMoney(value) {
+      return `${formatNumber(value)} ₽`;
+    }
+
+    function buildSelect(select, values, allLabel) {
+      select.innerHTML = [`<option value="all">${allLabel}</option>`]
+        .concat(values.map(value => `<option value="${value}">${value}</option>`))
+        .join("");
+    }
+
+    function selectedData() {
+      return dataset.filter(row => {
+        const yearOk = els.year.value === "all" || String(row.year) === els.year.value;
+        const regionOk = els.region.value === "all" || row.region === els.region.value;
+        const categoryOk = els.category.value === "all" || row.category === els.category.value;
+        return yearOk && regionOk && categoryOk;
+      });
+    }
+
+    function total(rows, key) {
+      return rows.reduce((sum, row) => sum + row[key], 0);
+    }
+
+    function averageRevenueByYear(rows) {
+      const map = new Map();
+      rows.forEach(row => map.set(row.year, (map.get(row.year) || 0) + row.revenue));
+      return [...map.entries()].sort((a, b) => a[0] - b[0]).map(([year, revenue]) => ({ year, revenue }));
+    }
+
+    function percentToAverage(value, values) {
+      if (!values.length) return "0% к среднему";
+      const avg = values.reduce((sum, item) => sum + item, 0) / values.length;
+      if (!avg) return "0% к среднему";
+      const delta = ((value - avg) / avg) * 100;
+      const sign = delta >= 0 ? "+" : "";
+      return `${sign}${delta.toFixed(1)}% к среднему`;
+    }
+
+    function drawLineChart(points) {
+      const svg = els.chart;
+      const width = 760;
+      const height = 360;
+      const pad = { top: 24, right: 28, bottom: 54, left: 82 };
+      const innerW = width - pad.left - pad.right;
+      const innerH = height - pad.top - pad.bottom;
+
+      if (!points.length) {
+        svg.innerHTML = `<text x="380" y="180" text-anchor="middle" fill="#667085" font-size="20" font-weight="800">Нет данных</text>`;
+        return;
+      }
+
+      const maxValue = Math.max(...points.map(p => p.revenue));
+      const minValue = Math.min(...points.map(p => p.revenue));
+      const yMin = Math.max(0, minValue * .82);
+      const yMax = maxValue * 1.12;
+      const x = index => pad.left + (points.length === 1 ? innerW / 2 : innerW * index / (points.length - 1));
+      const y = value => pad.top + innerH - ((value - yMin) / (yMax - yMin || 1)) * innerH;
+
+      const gridLines = Array.from({ length: 5 }, (_, i) => {
+        const value = yMin + (yMax - yMin) * i / 4;
+        const yy = y(value);
+        return `
+          <line x1="${pad.left}" x2="${width - pad.right}" y1="${yy}" y2="${yy}" stroke="#dbe3f0" stroke-width="1" />
+          <text x="${pad.left - 14}" y="${yy + 5}" text-anchor="end" fill="#667085" font-size="12" font-weight="800">${formatNumber(value / 1000000)} млн</text>
+        `;
+      }).reverse().join("");
+
+      const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(p.revenue)}`).join(" ");
+      const area = `${path} L ${x(points.length - 1)} ${height - pad.bottom} L ${x(0)} ${height - pad.bottom} Z`;
+
+      const labels = points.map((p, i) => `
+        <text x="${x(i)}" y="${height - 18}" text-anchor="middle" fill="#667085" font-size="13" font-weight="900">${p.year}</text>
+      `).join("");
+
+      const dots = points.map((p, i) => `
+        <g class="dot" data-label="${p.year}: ${formatMoney(p.revenue)}">
+          <circle cx="${x(i)}" cy="${y(p.revenue)}" r="8" fill="#ffffff" stroke="#2563eb" stroke-width="4"></circle>
+          <circle cx="${x(i)}" cy="${y(p.revenue)}" r="18" fill="transparent"></circle>
+        </g>
+      `).join("");
+
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="lineGradient" x1="0" x2="1">
+            <stop offset="0%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#7c3aed" />
+          </linearGradient>
+          <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#2563eb" stop-opacity=".24" />
+            <stop offset="100%" stop-color="#2563eb" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        ${gridLines}
+        <path d="${area}" fill="url(#areaGradient)"></path>
+        <path d="${path}" fill="none" stroke="url(#lineGradient)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+        ${labels}
+        ${dots}
+      `;
+
+      svg.querySelectorAll(".dot").forEach(dot => {
+        dot.addEventListener("mousemove", event => {
+          els.tooltip.style.display = "block";
+          els.tooltip.textContent = dot.dataset.label;
+          els.tooltip.style.left = `${event.clientX + 14}px`;
+          els.tooltip.style.top = `${event.clientY - 18}px`;
+        });
+        dot.addEventListener("mouseleave", () => {
+          els.tooltip.style.display = "none";
+        });
+      });
+    }
+
+    function renderBars(rows) {
+      const map = new Map();
+      rows.forEach(row => map.set(row.category, (map.get(row.category) || 0) + row.revenue));
+      const items = [...map.entries()].sort((a, b) => b[1] - a[1]);
+      const max = Math.max(...items.map(item => item[1]), 1);
+
+      els.bars.innerHTML = items.map(([name, value]) => `
+        <div class="bar-item">
+          <div class="bar-head">
+            <span>${name}</span>
+            <span>${formatMoney(value)}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: ${(value / max) * 100}%"></div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderTable(rows) {
+      const sorted = [...rows].sort((a, b) => b.year - a.year || b.revenue - a.revenue).slice(0, 18);
+      els.table.innerHTML = sorted.map(row => `
+        <tr>
+          <td><span class="badge">${row.year}</span></td>
+          <td>${row.region}</td>
+          <td>${row.category}</td>
+          <td>${formatNumber(row.orders)}</td>
+          <td>${formatMoney(row.avgTicket)}</td>
+          <td><b>${formatMoney(row.revenue)}</b></td>
+        </tr>
+      `).join("");
+    }
+
+    function render() {
+      const rows = selectedData();
+      const revenue = total(rows, "revenue");
+      const orders = total(rows, "orders");
+      const avgTicket = orders ? revenue / orders : 0;
+      const byYear = averageRevenueByYear(rows);
+
+      const regionTotals = new Map();
+      rows.forEach(row => regionTotals.set(row.region, (regionTotals.get(row.region) || 0) + row.revenue));
+      const leader = [...regionTotals.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
+
+      els.heroValue.textContent = formatMoney(revenue);
+      els.heroCaption.textContent = `${rows.length} строк данных. Выручка, заказы, динамика и таблица обновляются мгновенно.`;
+      els.revenue.textContent = formatMoney(revenue);
+      els.orders.textContent = formatNumber(orders);
+      els.ticket.textContent = formatMoney(avgTicket);
+      els.leader.textContent = leader;
+
+      els.revenueTrend.textContent = percentToAverage(revenue, byYear.map(item => item.revenue));
+      els.ordersTrend.textContent = percentToAverage(orders, dataset.map(item => item.orders));
+      els.ticketTrend.textContent = "Среднее по выборке";
+      els.leaderTrend.textContent = leader === "-" ? "Нет данных" : "По суммарной выручке";
+
+      drawLineChart(byYear);
+      renderBars(rows);
+      renderTable(rows);
+    }
+
+    function resetFilters() {
+      els.year.value = "all";
+      els.region.value = "all";
+      els.category.value = "all";
+      render();
+    }
+
+    buildSelect(els.year, unique("year"), "Все годы");
+    buildSelect(els.region, unique("region"), "Все регионы");
+    buildSelect(els.category, unique("category"), "Все категории");
+
+    [els.year, els.region, els.category].forEach(select => select.addEventListener("change", render));
+    els.reset.addEventListener("click", resetFilters);
+
+    render();
+  </script>
+</body>
+</html>
